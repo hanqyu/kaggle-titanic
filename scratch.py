@@ -1,34 +1,42 @@
 import turicreate as tc
-import pandas as pd
-import numpy as np
-
-train = pd.read_csv('train.csv')
-train.head()
-
+'''
 train.columns
 Index(['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
        'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'],
       dtype='object')
-
-test = pd.read_csv('test.csv')
+'''
 
 train_sf = tc.SFrame().read_csv('train.csv')
+train, test = tc.SFrame().read_csv('train.csv').random_split(0.8)
 
-train_sf.show()
-test_sf = tc.SFrame().read_csv('test.csv')
-model = tc.classifier.create(train_sf, target='Survived', features=['Pclass', 'Sex', 'SibSp',
-       'Parch', 'Fare', 'Embarked'])
-'''
-PROGRESS: Model selection based on validation accuracy:
-PROGRESS: ---------------------------------------------
-PROGRESS: BoostedTreesClassifier          : 0.804347813129425
-PROGRESS: RandomForestClassifier          : 0.782608687877655
-PROGRESS: DecisionTreeClassifier          : 0.8260869383811951
-PROGRESS: SVMClassifier                   : 0.804348
-PROGRESS: LogisticClassifier              : 0.804348
-PROGRESS: ---------------------------------------------
-PROGRESS: Selecting DecisionTreeClassifier based on validation set performance.
-'''
 
-model = tc.decision_tree_classifier.create(train_sf, target='Survived', features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'Embarked'])
-train_sf[train_sf['Age'] is None]
+# train['Pclass_str'] = train.apply(lambda x: str(x['Pclass'])) # 별로 효과 없더라
+
+# 일단 classifier를 돌려봄.
+model = tc.classifier.create(train, target='Survived', features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'Embarked'])
+
+# BoostedTreesClassifier로 작업해보기로
+model = tc.random_forest_classifier.create(train, target='Survived', features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'Embarked'], max_iterations=11)
+
+#성능을 향상시키려면 feature 컬럼을 더 추가하고 max-depth 등을 만져야 할 듯
+
+
+# 부모자식의 최빈값 3순위 0,1,2의 나이 평균 보기
+for i in [0,1,2]: print(i, non_empty_ages[non_empty_ages['Parch'] == i]['Age'].mean())
+
+# age 빈 컬럼을 예측값으로 채워보자
+non_empty_ages = train_sf[train_sf['Age'] != None]
+empty_ages = train_sf[train_sf['Age'] == None]
+
+non_empty_ages['AgeInt'] = non_empty_ages.apply(lambda x: int(x['Age']))
+train, test = non_empty_ages.random_split(0.8)
+
+age_predict_model = tc.boosted_trees_regression.create(non_empty_ages, max_depth=20, target='AgeInt', max_iterations=1000)#, features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'])
+age_predict_model.save('age_prediction')
+
+# results = age_predict_model.evaluate(test)
+empty_ages['AgeInt'] = age_predict_model.predict(empty_ages).apply(lambda x: round(x))
+empty_ages[['PassengerId', 'AgeInt']]
+
+age_predict_model.predict(test)
+empty_ages.show()

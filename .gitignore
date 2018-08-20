@@ -2,3 +2,8 @@
 gender_submission.csv
 test.csv
 train.csv
+*.frame_idx
+age_prediction/objects.bin
+age_prediction/m_367c27d321860d79.sidx
+age_prediction/m_367c27d321860d79.0000
+age_prediction/dir_archive.ini
