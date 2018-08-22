@@ -31,12 +31,21 @@ empty_ages = train_sf[train_sf['Age'] == None]
 non_empty_ages['AgeInt'] = non_empty_ages.apply(lambda x: int(x['Age']))
 train, test = non_empty_ages.random_split(0.8)
 
-age_predict_model = tc.boosted_trees_regression.create(non_empty_ages, max_depth=20, target='AgeInt', max_iterations=1000)#, features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'])
-age_predict_model.save('age_prediction')
+age_predict_model = tc.classifier.create(train, target='AgeInt', features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'])
+age_predict_model = tc.boosted_trees_regression.create(train, max_depth=20, target='AgeInt', features=['Pclass', 'Sex', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked'])
 
-# results = age_predict_model.evaluate(test)
 empty_ages['AgeInt'] = age_predict_model.predict(empty_ages).apply(lambda x: round(x))
 empty_ages[['PassengerId', 'AgeInt']]
-
-age_predict_model.predict(test)
 empty_ages.show()
+age_predict_model.predict(test) == test['AgeInt'].apply(lambda x: round(x)
+
+
+# age problem
+1. age가 정규분포를 따른다고 가정하고 나머지 값을 채워본다
+2. age를 예측한다. 그냥 예측하면 힘드니까 범주형변수로 바꾼뒤 채운다
+
+
+#Embarked 예측
+embarked_predict_model = tc.classifier.create(train_sf[train_sf['Embarked'] != ''].dropna(), target='Embarked')
+embarked_predict_model.predict(train_sf[train_sf['Embarked'] == ''])
+['S', 'S']
