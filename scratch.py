@@ -49,3 +49,6 @@ age_predict_model.predict(test) == test['AgeInt'].apply(lambda x: round(x)
 embarked_predict_model = tc.classifier.create(train_sf[train_sf['Embarked'] != ''].dropna(), target='Embarked')
 embarked_predict_model.predict(train_sf[train_sf['Embarked'] == ''])
 ['S', 'S']
+
+#data insight
+pd.crosstab([df['Sex'], df['Survived']],df['Pclass'],margins=True)
