@@ -24,6 +24,7 @@ print('The accuracy of the Decision Tree is',metrics.accuracy_score(dt_predictio
 
 /// 별로인듯
 
+
 import turicreate as tc
 
 df.to_csv('temp.csv')
